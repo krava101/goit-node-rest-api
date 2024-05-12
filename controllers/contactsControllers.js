@@ -1,42 +1,52 @@
-import { createContactSchema, updateContactSchema } from "../schemas/contactsSchemas.js";
-import * as contactsService from "../services/contactsServices.js";
+import { contactIdSchema, createContactSchema, updateContactSchema, updateStatusContactSchema } from "../schemas/contactsSchemas.js";
+import Contact from "../models/contact.js";
 
-export const getAllContacts = async (_, res, next) => {
+const getAllContacts = async (_, res, next) => {
   try {
-    const contacts = await contactsService.listContacts();
+    const contacts = await Contact.find();
     res.status(200).send(contacts);
   } catch (err){
     next(err);
   }
 };
 
-export const getOneContact = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const contact = await contactsService.getContactById(id);
-    contact ? res.status(200).send(contact) : res.status(404).send({message: "Not found" });
-  } catch (err) {
-    next(err);
+const getOneContact = async (req, res, next) => {
+  const { id } = req.params;
+  const valId = contactIdSchema.validate(id);
+  if (valId.error) {
+    return res.status(400).send({ message: valId.error.details[0].message });
+  } else {
+    try {
+      const contact = await Contact.findById(id);
+      contact ? res.status(200).send(contact) : res.status(404).send({ message: "Not found" });
+    } catch (err) {
+      next(err);
+    }
   }
 };
 
-export const deleteContact = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const contact = await contactsService.removeContact(id);
-    contact ? res.status(200).send(contact) : res.status(404).send({message: "Not found" });
-  } catch (err) {
-    next(err);
+const deleteContact = async (req, res, next) => {
+  const { id } = req.params;
+  const valId = contactIdSchema.validate(id);
+  if (valId.error) {
+    return res.status(400).send({ message: valId.error.details[0].message });
+  } else {
+    try {
+      const contact = await Contact.findByIdAndDelete(id);
+      contact ? res.status(200).send(contact) : res.status(404).send({message: "Not found" });
+    } catch (err) {
+      next(err);
+    }
   }
 };
 
-export const createContact = async (req, res, next) => {
+const createContact = async (req, res, next) => {
   const contactValidate = createContactSchema.validate(req.body);
   if (contactValidate.error) {
     return res.status(400).send({message: contactValidate.error.details[0].message });
   } else {
     try {
-      const contact = await contactsService.addContact(req.body);
+      const contact = await Contact.create(req.body);
       res.status(201).send(contact);
     } catch (err) {
       next(err);
@@ -44,20 +54,52 @@ export const createContact = async (req, res, next) => {
   }
 };
 
-export const updateContact = async (req, res, next) => {
+const updateContact = async (req, res, next) => {
   const { id } = req.params;
+  const valId = contactIdSchema.validate(id);
+  const contactValidate = updateContactSchema.validate(req.body);
+  if (valId.error) {
+    return res.status(400).send({ message: valId.error.details[0].message });
+  }
   if (!Object.keys(req.body).length) {
     return res.send({ message: "Body must have at least one field" });
   }
-  const contactValidate = updateContactSchema.validate(req.body);
   if (contactValidate.error) {
-    return res.status(400).send({message: contactValidate.error.details[0].message });
+    return res.status(400).send({ message: contactValidate.error.details[0].message });
   } else {
     try {
-      const contact = await contactsService.updateContact(id, req.body);
+      const contact = await Contact.findByIdAndUpdate(id, req.body, {new: true});
       contact ? res.status(200).send(contact) : res.status(404).send({message: "Not found" });
     } catch (err) {
       next(err);
     }
   }
 };
+
+const updateStatusContact = async (req, res, next) => {
+  const { id } = req.params;
+  const valId = contactIdSchema.validate(id);
+  const validateFavorite = updateStatusContactSchema.validate(req.body);
+  if (valId.error) {
+    return res.status(400).send({ message: valId.error.details[0].message });
+  }
+  if (validateFavorite.error) {
+    return res.status(400).send({ message: validateFavorite.error.details[0].message });
+  } else {
+    try {
+      const contact = await Contact.findByIdAndUpdate(id, req.body, {new: true});
+      contact ? res.status(200).send(contact) : res.status(404).send({message: "Not found" });
+    } catch (err) {
+      next(err);
+    }
+  }
+};
+
+export default {
+  updateContact,
+  createContact,
+  deleteContact,
+  getOneContact,
+  getAllContacts,
+  updateStatusContact,
+}
