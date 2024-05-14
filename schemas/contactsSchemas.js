@@ -19,5 +19,3 @@ export const updateContactSchema = Joi.object({
 export const updateStatusContactSchema = Joi.object({
   favorite: Joi.boolean().required()
 })
-
-export const contactIdSchema = Joi.string().min(24).max(24);

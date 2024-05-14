@@ -1,4 +1,5 @@
-import { contactIdSchema, createContactSchema, updateContactSchema, updateStatusContactSchema } from "../schemas/contactsSchemas.js";
+import { createContactSchema, updateContactSchema, updateStatusContactSchema } from "../schemas/contactsSchemas.js";
+import { isValidObjectId } from "mongoose";
 import Contact from "../models/contact.js";
 
 const getAllContacts = async (_, res, next) => {
@@ -12,9 +13,9 @@ const getAllContacts = async (_, res, next) => {
 
 const getOneContact = async (req, res, next) => {
   const { id } = req.params;
-  const valId = contactIdSchema.validate(id);
-  if (valId.error) {
-    return res.status(400).send({ message: valId.error.details[0].message });
+  const valId = isValidObjectId(id);
+  if (!valId) {
+    return res.status(400).send({ message: "Not found" });
   } else {
     try {
       const contact = await Contact.findById(id);
@@ -27,9 +28,9 @@ const getOneContact = async (req, res, next) => {
 
 const deleteContact = async (req, res, next) => {
   const { id } = req.params;
-  const valId = contactIdSchema.validate(id);
-  if (valId.error) {
-    return res.status(400).send({ message: valId.error.details[0].message });
+  const valId = isValidObjectId(id);
+  if (!valId) {
+    return res.status(400).send({ message: "Not found" });
   } else {
     try {
       const contact = await Contact.findByIdAndDelete(id);
@@ -56,10 +57,10 @@ const createContact = async (req, res, next) => {
 
 const updateContact = async (req, res, next) => {
   const { id } = req.params;
-  const valId = contactIdSchema.validate(id);
+  const valId = isValidObjectId(id);
   const contactValidate = updateContactSchema.validate(req.body);
-  if (valId.error) {
-    return res.status(400).send({ message: valId.error.details[0].message });
+  if (!valId) {
+    return res.status(400).send({ message: "Not found" });
   }
   if (!Object.keys(req.body).length) {
     return res.send({ message: "Body must have at least one field" });
@@ -78,10 +79,10 @@ const updateContact = async (req, res, next) => {
 
 const updateStatusContact = async (req, res, next) => {
   const { id } = req.params;
-  const valId = contactIdSchema.validate(id);
+  const valId = isValidObjectId(id);
   const validateFavorite = updateStatusContactSchema.validate(req.body);
-  if (valId.error) {
-    return res.status(400).send({ message: valId.error.details[0].message });
+  if (!valId) {
+    return res.status(400).send({ message: "Not found" });
   }
   if (validateFavorite.error) {
     return res.status(400).send({ message: validateFavorite.error.details[0].message });
