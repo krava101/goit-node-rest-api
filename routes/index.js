@@ -1,0 +1,11 @@
+import contactsRouter from "../routes/contactsRouter.js";
+import authMiddleware from "../middleware/auth.js";
+import authRouter from "../routes/authRouter.js"
+import express from 'express';
+
+const router = express.Router();
+
+router.use("/api/contacts", authMiddleware, contactsRouter);
+router.use("/api/users", authRouter);
+
+export default router;
