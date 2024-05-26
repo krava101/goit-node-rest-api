@@ -2,7 +2,6 @@ import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
 
 function auth(req, res, next) {
-  console.log("middle1212");
   const authHeader = req.headers.authorization;
   if (typeof authHeader === 'undefined') {
     return res.status(401).send({ message: "Invalid token!" });
