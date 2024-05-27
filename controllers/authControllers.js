@@ -77,6 +77,9 @@ const current = async (req, res, next) => {
 }
 
 const uploadAvatar = async (req, res, next) => {
+  if (typeof req.file === "undefined") {
+    return res.status(400).send({ message: 'File not found' });
+  }
   try {
     Jimp.read(req.file.path, (err, img) => {
       if (err) {
@@ -89,7 +92,7 @@ const uploadAvatar = async (req, res, next) => {
 
     await fs.rename(req.file.path, path.resolve("public/avatars", req.file.filename));
 
-    const avatar = `${req.file.filename}`;
+    const avatar = `/avatars/${req.file.filename}`;
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { avatar },
