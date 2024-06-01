@@ -165,7 +165,7 @@ const reverify = async (req, res, next) => {
       text: `To confirm your email please open the http://localhost:5050/api/users/verify/${verificationToken}`
     })
 
-    return res.status(200).send({ message: `We resent a mail for verification on ${email}` })
+    return res.status(200).send({ message: `We resend a mail for verification on ${email}` })
   } catch (err) {
     next(err);
   }
